@@ -222,6 +222,7 @@ class Scene:
             angle = -90
         if action == self.dir.value_str[3]:
             angle = 180
+
         return angle
 
     def create_interface(self):

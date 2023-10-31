@@ -101,11 +101,14 @@ class Agent:
             # action
             actions_value = self.policy_network.forward(state)  # get action
             action = torch.max(actions_value.cpu(), 1)[1].data.numpy()
+
+            print("ML action:", action)
             # action = np.random.randint(0, 4)  # (完全随机)
             # action = np.array([action])
         else:  # a_star
             action = self.find_action_astar(valid_path_matrix, current_place, target_place)
             action = np.array([action])
+            # print("action Astar:", action)
             # action = np.random.randint(0, 4, (1))
             # print("action", action)
         return action
@@ -115,6 +118,7 @@ class Agent:
         """value by prediction"""
         state = torch.from_numpy(s).float().unsqueeze(0).to(self.device)  # array to torch
         target = self.policy_network.forward(state).cpu()  # get action
+        print("target:", target)
         old_val = target[0][int(a)]
         """value by reward"""
         state = torch.from_numpy(s_).float().unsqueeze(0).to(self.device)  # array to torch
@@ -193,8 +197,9 @@ class Agent:
         path_founder = astar.FindPathAstar(matrix_valid_map, (current_position[0] - 1, current_position[1] - 1),
                                            (target_position[0] - 1, target_position[1] - 1))
         find_target, path_list, path_map, action_list = path_founder.run_astar_method()
+        print("actionlist", action_list)
         if find_target is False or len(action_list) == 0:
-            action_str = "STOP"
+            action_str = "DOWN"
         else:
             action_str = action_list[0]
         return self.dir.action_str_value(action_str)
