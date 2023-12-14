@@ -12,7 +12,7 @@ class SuperParas:
     Explorer_Always_Empty = False
 
     # 屏幕刷新频率 FPS
-    FPS = 300
+    FPS = 120
 
     # sparse reward
     Sparse_Reward = False

@@ -8,7 +8,6 @@ import os
 
 sys.path.append(os.path.dirname(__file__))
 
-
 """重大修改：调整结构，不一定每次都要渲染图像
 核心都在rungame方法进行修改"""
 class Scene:
@@ -66,6 +65,7 @@ class Scene:
 
     def render_init(self):
         """渲染screen"""
+        # os.environ['SDL_VIDEODRIVER'] = 'dummy'
         pygame.init()
         pygame.display.set_caption('multiAGV World')
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
@@ -127,6 +127,8 @@ class Scene:
                 if not explorer.has_created:
                     break
                 if self.layout.task_finished:
+                    print("time:", self.running_time)
+                    
                     return expert_info, expert_name, expert_action  # 使用A_star方法收集专家经验
                 # current explorer has no more task
                 if explorer.all_assigned:
@@ -155,6 +157,7 @@ class Scene:
                     is_end = True if (self.layout.task_finished or self.running_time >= self.max_training_steps) else is_end
                     self.smart_controller.store_info(self.create_info(), reward, is_end, explorer.explorer_name)
                     if is_end:
+                        print("time:", self.running_time)
                         return self.running_time
                 else:
                     if input_action != "":
@@ -170,7 +173,9 @@ class Scene:
                 self.create_sidebar()  # update sidebar
                 self.screen.blit(self.interface, (self.interface_start_x, self.interface_start_y))
                 self.screen.blit(self.sidebar, (self.sidebar_start_x, self.sidebar_start_y))
-                pygame.display.flip()  # 更新屏幕内容
+                # pygame.display.quit() 
+                pygame.display.flip() 
+
             else:
                 pass
 
@@ -194,7 +199,9 @@ class Scene:
             # update screen
             self.screen.blit(self.interface, (self.interface_start_x, self.interface_start_y))
             self.screen.blit(self.sidebar, (self.sidebar_start_x, self.sidebar_start_y))
-            pygame.display.flip()  # 更新屏幕内容
+            # pygame.display.quit()  
+            pygame.display.flip()
+
         else:
             pass
 
@@ -306,9 +313,9 @@ class Scene:
         self.sidebar.blit(right, (130+4, self.sidebar_height / 3 + 105))
         self.sidebar.blit(down, (95+4, self.sidebar_height / 3 + 130))
         # Author
-        font_author = pygame.font.SysFont("Times New Roman", 15)
-        author_detail = font_author.render(str("Author: Stone"), True, self.color_box.BLACK_COLOR)
-        self.sidebar.blit(author_detail, (20, 5 * self.sidebar_height / 6))
+        # font_author = pygame.font.SysFont("Times New Roman", 15)
+        # author_detail = font_author.render(str("Author: Stone"), True, self.color_box.BLACK_COLOR)
+        # self.sidebar.blit(author_detail, (20, 5 * self.sidebar_height / 6))
 
     def draw_scale(self, screen, value, axis):
         font = pygame.font.SysFont("Times New Roman", 12)

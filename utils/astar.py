@@ -83,9 +83,9 @@ class FindPathAstar:
             # print("_________________")
             # for n in _open:
             #     print(n.position)
-            min_f = np.argmin([n.all_cost for n in _open])  # 最小值的下标
+            min_f = np.argmin([n.all_cost for n in _open])  # chỉ số có giá trị tối thiểu
             current_cell = _open[min_f]
-            _closed.append(_open.pop(min_f))  # 移除列表中的一个元素（默认最后一个元素），并且返回该元素的值
+            _closed.append(_open.pop(min_f))  # Xóa một phần tử khỏi danh sách (mặc định là phần tử cuối cùng) và trả về giá trị của phần tử đó
 
             if current_cell.position == self.target_cell.position:
                 self.find_target = True

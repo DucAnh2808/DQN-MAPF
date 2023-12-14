@@ -81,6 +81,7 @@ class Memory:  # stored as ( s, a, r, s_ ) in SumTree
 
     def add(self, error, sample):
         p = self._get_priority(error)
+
         self.tree.add(p, sample)
 
     def sample(self, n):

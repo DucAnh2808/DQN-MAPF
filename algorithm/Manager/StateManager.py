@@ -36,6 +36,9 @@ class StateManager:
         else:
             # obs = np.array((current_position_matrix, target_position_matrix, valid_path_matrix))
             obs = [current_position_matrix, target_position_matrix, valid_path_matrix]
+            print("current_position_matrix", current_position_matrix)
+            print("target_position_matrix", target_position_matrix)
+            print("valid_path_matrix", valid_path_matrix)
         """obs: neural network uses obs to make decision"""
         """current_place, target_place, valid_path_matrix: astar algorithm uses them to make decision"""
         return obs, current_place, target_place, valid_path_matrix

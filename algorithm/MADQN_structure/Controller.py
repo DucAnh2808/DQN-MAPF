@@ -1,8 +1,4 @@
-"""
-DQN algorithm applying on multi-AGV
-It is actually a DDQN algorithm
-The exploration strategy is replaced by A*
-"""
+
 from algorithm.MADQN_structure.MADQN import Net as Net
 from algorithm.MADQN_structure.MADQN import Agent as Agent
 from algorithm.Manager.StateManager import StateManager as stateManager
@@ -18,7 +14,7 @@ np.set_printoptions(threshold=np.inf)
 class MADQNAgentController:
     """a link between environment and algorithm"""
     # state_number要修改
-    def __init__(self, rmfs_scene, map_xdim, map_ydim, max_task, control_mode=1, state_number=4, expert_guiding=False):  # expert未启用
+    def __init__(self, rmfs_scene, map_xdim, map_ydim, max_task, control_mode=1, state_number=4, expert_guiding=False):  # 
         print("start simulation with DQN algorithm")
         print("map_xdim:", map_xdim, "map_ydim:", map_ydim, "state_number:", state_number)
         '''received parameters'''
@@ -31,10 +27,15 @@ class MADQNAgentController:
         """create device"""
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # self.device = torch.device("cpu")
         """create_agent"""
+        if torch.cuda.is_available():
+            print("CUDA is available. You can use GPU.")
+        else:
+            print("CUDA is not available. You can only use CPU.")
+
         self.agent = None
         self.create_agent(map_xdim, map_ydim)
         '''training parameters'''
-        self.simulation_times = 150
+        self.simulation_times = 10000
         self.max_value = max_task*3 - 1
         self.max_value_times = 0
         self.duration_times = 100
@@ -56,8 +57,8 @@ class MADQNAgentController:
             target_net = Net(self.state_number, self.rmfs_model.action_number, map_xdim, map_ydim)
         elif self.control_mode == "use_NN":
             print("load NN")
-            policy_net = torch.load(os.path.join(self.storage_path, "policy_net_auto.pt"))
-            target_net = torch.load(os.path.join(self.storage_path, "target_net_auto.pt"))
+            policy_net = torch.load(os.path.join(self.storage_path, "random3rb_1_4_4_4_4_p.pt"))
+            target_net = torch.load(os.path.join(self.storage_path, "random3rb_1_4_4_4_4_t.pt"))
         '''create Agent object'''
         self.agent = Agent(policy_net, target_net, self.device)
 
@@ -71,6 +72,10 @@ class MADQNAgentController:
         print("model is controlled by neural network")
         print("Training starts at"+str(start_time))
         for i_episode in range(self.simulation_times):
+            print("episode:", i_episode)
+            print(self.agent.epsilon)
+            print(self.agent.lr)
+
             """init model and agent"""
             self.self_init()
             self.rmfs_model.init()
@@ -80,11 +85,11 @@ class MADQNAgentController:
             self.lifelong_reward.append(int(self.reward_acc))
             log = 'i_episode: {},\t reward_accu: {}, \t action_length: {},\t running times: {}'.format(i_episode, self.reward_acc, self.action_length_record, running_time)
             self.logs.append(log)
-            print(log)
+            # print(log)
             """调整训练参数"""
-            if self.lr_start_decay:  # -------------------------------------------------------------------还没改
-                self.agent.change_learning_rate(times=100)  # 改变探索率
-                self.agent.change_explore_rate(times=100)  # 改变lr
+            if self.lr_start_decay:  
+                self.agent.change_learning_rate(times=100)  
+                self.agent.change_explore_rate(times=100) 
             if i_episode % 100 == 0:  # neural network auto-save
                 self.save_neural_network(auto=True)
             if self.check_determination(self.reward_acc):  # check whether determination condition meets
@@ -102,7 +107,7 @@ class MADQNAgentController:
                                  color="k", save_path=os.path.join(self.storage_path, "Loss Value"))
         plt.show()
 
-    def choose_action(self, all_info, this_veh):  # all_info=[layout  , current_place, target_place]
+    def choose_action(self, all_info, this_veh):  # all_info=[layout, current_place, target_place]
         """build a VehObj to store information"""
         veh_found, veh_obj = False, None
         for veh in self.veh_group:
@@ -115,13 +120,16 @@ class MADQNAgentController:
         """get observation and other info"""
         obs, this_veh_cp, this_veh_tp, valid_path_matrix = self.stateManager.create_state(all_info, this_veh, obs_clip=True)
         obs = np.array(obs)
+        # print(this_veh)
+
         """get action"""
         veh_obj.obs_current = obs
         epsilon = 1. if self.control_mode == "use_NN" else 0.
-        action_l = self.agent.choose_action(obs, current_place=this_veh_cp, target_place=this_veh_tp, valid_path_matrix=valid_path_matrix, epsilon=epsilon)   # state should be formatted as array
+        action_l = self.agent.choose_action(obs, current_place=this_veh_cp, target_place=this_veh_tp, valid_path_matrix=valid_path_matrix, epsilon=epsilon)   
         action = action_l[0]
         """record info"""
         veh_obj.action.append(action)
+        # print("chuoi hoat dong", veh_obj.action)
         self.action_length_record += 1
         return action
 
@@ -137,7 +145,9 @@ class MADQNAgentController:
                 veh_obj = veh
                 break
         obs, this_veh_cp, this_veh_tp, valid_path_matrix = self.stateManager.create_state(all_info, this_veh, obs_clip=True)
+        
         obs = np.array(obs)
+        # print("obs", obs)
         # 先存储经验，在保留新数据
         veh_obj.obs_next, veh_obj.reward = obs, reward
         is_done = 1 if is_end else 0
@@ -145,14 +155,11 @@ class MADQNAgentController:
         self.agent.store_transition(veh_obj.obs_current, veh_obj.action[-1], veh_obj.reward, veh_obj.obs_next, is_done)
 
     def check_determination(self, reward_accu):
-        """check whether the determination meets"""
-        """记录最大值次数"""
         if int(reward_accu) >= self.max_value:
-            self.lr_start_decay = True  # 有一次最大值，学习率和探索率开始更新
-            self.max_value_times = self.max_value_times+1
+            self.lr_start_decay = True 
+            self.max_value_times = self.max_value_times + 1
         else:
             self.max_value_times = 0
-        """判断是否结束"""
         end_training = False
         if self.max_value_times == self.duration_times:
             end_training = True
@@ -163,13 +170,14 @@ class MADQNAgentController:
             """using NN, no need to store info and train NN"""
             return
         if auto:
+            file = max
             print("neural network auto-saved")
-            torch.save(self.agent.policy_network, os.path.join(self.storage_path, "policy_net_auto.pt"))
-            torch.save(self.agent.target_network, os.path.join(self.storage_path, "target_net_auto.pt"))
+            torch.save(self.agent.policy_network, os.path.join(self.storage_path, "random3rb_1_4_4_4_4_p_a.pt"))
+            torch.save(self.agent.target_network, os.path.join(self.storage_path, "random3rb_1_4_4_4_4_t_a.pt"))
         else:
             print("final neural network saved")
-            torch.save(self.agent.policy_network, os.path.join(self.storage_path, "policy_net.pt"))
-            torch.save(self.agent.target_network, os.path.join(self.storage_path, "target_net.pt"))
+            torch.save(self.agent.policy_network, os.path.join(self.storage_path, "random3rb_1_4_4_4_4_p.pt"))
+            torch.save(self.agent.target_network, os.path.join(self.storage_path, "random3rb_1_4_4_4_4_t.pt"))
 
     def save_log(self):
         if self.control_mode == "use_NN":

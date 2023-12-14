@@ -157,7 +157,7 @@ class Explorer:
                 current_place[0] > self.layout.scene_x_width or current_place[1] > self.layout.scene_y_width:
             self.running_state = "illegal action"
             reward, is_end = -1, True
-            print("out of boundary")
+            print("Ra khoi ban do")
             return reward, is_end
         """"hit storage position or picking station """
         # hit storage position
@@ -165,14 +165,14 @@ class Explorer:
                 self.loaded is True and current_place != self.target_position:
             self.running_state = "hit s_station"
             reward, is_end = -1, True
-            print("hit s_station")
+            print("Va cham phai ke kho hang")
             return reward, is_end
         # hit picking position
         if (current_place[0], current_place[1]) in self.layout.picking_station_list and \
                 current_place != self.target_position:  # no need to check load condition
             self.running_state = "hit p_station"
             reward, is_end = -1, True
-            print("hit p_station")
+            print("Va cham phai o lay hang")
             return reward, is_end
         """"hit other veh """
         for i in range(1, len(all_info)):  # the first position of info is layout
@@ -183,7 +183,7 @@ class Explorer:
             else:
                 if current_place == current_place_:
                     reward, is_end = -1, True
-                    print("hit other veh")
+                    print("Va cham phai Robot khac")
                     return reward, is_end
         """reach target place"""
         if current_place[0] == self.target_position[0] and current_place[1] == self.target_position[1]:
