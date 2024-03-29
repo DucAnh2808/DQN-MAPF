@@ -153,6 +153,60 @@ class FindPathAstar:
             self.action_list.append(action_str)
 
 
+class Layout_main():
+    MatrixPicking = []
+    MatrixPicking.append(1.000)
+    for i in range(0, 40):
+        if i % 3 == 1:
+            MatrixPicking.append(2.000)
+        else:
+            MatrixPicking.append(1.000)
+    # MatrixPicking[21] = 0
+    MatrixPicking.append(0.000)
+    MatrixStorage = []
+    MatrixStorage.append(0.000)
+    for i in range(0, 41):
+        if i % 4 == 1:
+            MatrixStorage.append(0.000)
+        elif i%4 == 2:
+            MatrixStorage.append(0.000)
+        else:
+            MatrixStorage.append(1.000)
+
+    MatrixZ = []
+    MatrixZ.append(1.000)
+    for i in range(0,41):
+        MatrixZ.append(1.000)
+
+    MatrixStorage2 = []
+    for i in range (0, 5):
+        MatrixStorage2.append(MatrixStorage)
+
+    MatrixLayout = []
+    MatrixLayout.append(MatrixZ)
+    MatrixLayout.append(MatrixPicking)
+    MatrixLayout.append(MatrixPicking)
+    MatrixLayout.append(MatrixZ)
+    MatrixLayout.append(MatrixZ)
+    # MatrixLayout.append(MatrixZ)
+    # MatrixLayout.append(MatrixZ)
+    # MatrixLayout.append(MatrixZ)
+    # MatrixLayout.append(MatrixStorage2)
+    MatrixLayout = MatrixLayout + MatrixStorage2
+    MatrixLayout = MatrixLayout + MatrixStorage2
+    # MatrixLayout.append(MatrixZ)
+    # MatrixLayout = MatrixLayout + MatrixStorage2
+    # MatrixLayout = MatrixLayout + MatrixStorage2
+    # MatrixLayout.append(MatrixZ)
+    # MatrixLayout.append(MatrixZ)
+    # MatrixLayout.append(MatrixZ)
+    MatrixLayout.append(MatrixZ)
+    MatrixLayout.append(MatrixZ)
+    MatrixLayout.append(MatrixPicking)
+    MatrixLayout.append(MatrixPicking)
+    MatrixLayout.append(MatrixZ)
+    # Layout = np.array(MatrixLayout)
+
 if __name__ == "__main__":
     # valid_path = [[1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
     #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
@@ -166,22 +220,24 @@ if __name__ == "__main__":
     #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
     #               [1.0000, 0.0000, 1.0000, 1.0000, 0.0000, 1.0000, 1.0000],
     #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000]]
-    valid_path = [[1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [0.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 0.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
-                  [1.0000, 0.0000, 1.0000, 1.0000, 0.0000, 1.0000, 1.0000],
-                  [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000]]
+    # valid_path = [[1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [0.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 0.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    #               [1.0000, 0.0000, 1.0000, 1.0000, 0.0000, 1.0000, 1.0000],
+    #               [1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000]]
+    valid_path = Layout_main.MatrixLayout
+    print(valid_path)
     # start_position = (1, 4)  # (x,y)先横坐标，后纵坐标
     # target_position = (6, 6)
-    start_position = (0, 3)  # (x,y)先横坐标，后纵坐标
-    target_position = (5, 5)
+    start_position = (1, 1)  # (x,y)先横坐标，后纵坐标
+    target_position = (1, 2)
     founder = FindPathAstar(valid_path, start_position, target_position)
     find_target, path_list, path_map, action_list = founder.run_astar_method()
     print("find_target", find_target)

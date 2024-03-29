@@ -11,7 +11,7 @@ class StateManager:
     def __init__(self):
         self.padding_size = 0
 
-    def create_state(self, all_info, this_veh, obs_clip=False, padding_size=3):
+    def create_state(self, all_info, this_veh, obs_clip=False, padding_size = 2):
         """Create State"""
         self.padding_size = padding_size
         """variants"""
@@ -20,6 +20,7 @@ class StateManager:
         current_place, target_place, occupied_place, occupied_target, veh_loaded = \
             self.all_info_analysis(all_info, this_veh)
         """"format observations"""
+        # occupied_place = []
         valid_path_matrix, forbidden_path_matrix = \
             self.create_path_matrix(layout, veh_loaded, current_place, target_place, occupied_place)
         other_agv_matrix = self.create_other_matrix(layout, valid_path_matrix, occupied_place, target_place)
@@ -36,9 +37,6 @@ class StateManager:
         else:
             # obs = np.array((current_position_matrix, target_position_matrix, valid_path_matrix))
             obs = [current_position_matrix, target_position_matrix, valid_path_matrix]
-            print("current_position_matrix", current_position_matrix)
-            print("target_position_matrix", target_position_matrix)
-            print("valid_path_matrix", valid_path_matrix)
         """obs: neural network uses obs to make decision"""
         """current_place, target_place, valid_path_matrix: astar algorithm uses them to make decision"""
         return obs, current_place, target_place, valid_path_matrix
@@ -50,17 +48,19 @@ class StateManager:
         valid_path_matrix = copy.deepcopy(valid_path)
         forbidden_path_matrix = copy.deepcopy(forbidden_path)
         """调整valid_path_matrix和forbidden_path_matrix"""
-        # 根据current_position和target_position调整
-        valid_path_matrix[current_place[1] - 1][current_place[0] - 1] = 1.0  # current_place_array样式[[x],[y]]
+        # 
+        valid_path_matrix[current_place[1] - 1][current_place[0] - 1] = 1.0  # [[x],[y]]
         forbidden_path_matrix[current_place[1] - 1][current_place[0] - 1] = 0.0
         valid_path_matrix[target_place[1] - 1][target_place[0] - 1] = 1.0
         forbidden_path_matrix[target_place[1] - 1][target_place[0] - 1] = 0.0
-        # 其他车辆对道路的占用
-        if occupied_place:  # 非单辆车
-            for o_place in occupied_place:
-                valid_path_matrix[o_place[1] - 1][o_place[0] - 1] = 0.0
-                forbidden_path_matrix[o_place[1] - 1][o_place[0] - 1] = 1.0
+        # 
+        # if occupied_place:  # 
+        #     for o_place in occupied_place:
+        #         valid_path_matrix[o_place[1] - 1][o_place[0] - 1] = 0.0
+        #         forbidden_path_matrix[o_place[1] - 1][o_place[0] - 1] = 1.0
 
+        #Command no train
+        
         return valid_path_matrix, forbidden_path_matrix
 
     def create_other_matrix(self, layout, valid_path_matrix, occupied_place, target_place):
@@ -193,7 +193,6 @@ class StateManager:
             line = new_matrix[i][x_start:x_end + 1]
             final_matrix.append(line)
         return final_matrix
-
 
 
 

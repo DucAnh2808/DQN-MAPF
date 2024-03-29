@@ -5,6 +5,7 @@ from utils.utils import Direction as Dir
 from utils.utils import Working as Wokring
 from utils.settings import SuperParas as SuperPara
 import os
+# from task_assignment import end_task
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -41,6 +42,8 @@ class Explorer:
         self.action_distribution = [0, 0, 0, 0, 0]  # up, right, down, left, stop
         """"init"""
         self.init()
+        self.conflict = False
+        self.working = 0
 
     def init(self):
         self.last_place = [1, 1]
@@ -56,7 +59,17 @@ class Explorer:
         self.Working = False
         self.working_type = 0
         self.time_counting = 0
+        self.checklen = -9999
 
+    def move_to(self, target_place):
+        self.target_place = target_place
+        self.move_progress = 0.0  # Reset move progress
+
+    def update(self):
+        if self.move_progress < 1.0:
+            self.move_progress += 0.01  # Adjust the value based on your desired speed
+
+            
     def get_icon(self):
         icon_path = "multiAGVscene/icons/" + str(self.explorer_name) + "_" + str(self.task_stage + 1) + ".png"
         return icon_path
@@ -73,15 +86,14 @@ class Explorer:
 
         """judge if has unassigned tasks"""
         if len(self.layout.task_list) == len(self.layout.task_arrangement[0]) and self.task_stage == 0:
-            self.all_assigned = True  # 所有任务已经分配
-            # 判断任务是否全部完成
+            self.all_assigned = True  # tất cả nhiệm vụ đã được giao
+            # xác nhận đã hoàn thành xong hết các nhiệm vụ chưa
             if len(self.layout.task_list) == sum(self.layout.task_arrangement[2]):
                 self.layout.task_finished = True
                 self.running_state = "AllTaskFinished"
             return
         """"assign task"""
         if self.task_stage == 0:
-            # 获取任务编号，将以分配的任务进行添加
             self.task_order = len(self.layout.task_arrangement[0])
             self.layout.task_arrangement[0].append(self.task_order)
             self.layout.task_arrangement[1].append(self.explorer_name)
@@ -94,6 +106,9 @@ class Explorer:
         elif self.task_stage == 1:
             self.target_position = [self.layout.task_list[self.task_order][2],
                                     self.layout.task_list[self.task_order][3]]
+            self.layout.change_layout(self.layout.task_list[self.task_order][0] - 1,
+                                      self.layout.task_list[self.task_order][1] - 1, 2.0)
+
         elif self.task_stage == 2:
             self.target_position = [self.layout.task_list[self.task_order][0],
                                     self.layout.task_list[self.task_order][1]]
@@ -129,6 +144,7 @@ class Explorer:
         return action_value_dict[action_value]
 
     def execute_action(self, input_action, all_info=[], explorer_group=None):
+        
         """"basic info and manipulation"""
         self.action_distribution = [0, 0, 0, 0, 0]
         self.action_distribution[self.dir.action_str_value(input_action)] = 1
@@ -164,25 +180,28 @@ class Explorer:
         if (current_place[0], current_place[1]) in self.layout.storage_station_list and \
                 self.loaded is True and current_place != self.target_position:
             self.running_state = "hit s_station"
-            reward, is_end = -1, True
-            print("Va cham phai ke kho hang")
+            reward, is_end = -1, False
+            print("Va cham phai ke kho hang")       #Va cham phai ke kho hang
             return reward, is_end
         # hit picking position
         if (current_place[0], current_place[1]) in self.layout.picking_station_list and \
                 current_place != self.target_position:  # no need to check load condition
             self.running_state = "hit p_station"
-            reward, is_end = -1, True
+            reward, is_end = -1, False
             print("Va cham phai o lay hang")
             return reward, is_end
         """"hit other veh """
+        # print("allinfo", len(all_info))
         for i in range(1, len(all_info)):  # the first position of info is layout
             one_veh = all_info[i]
+            
             veh_name_, current_place_ = one_veh[0], one_veh[1]
             if veh_name_ == self.explorer_name:  # target_veh
                 continue
             else:
                 if current_place == current_place_:
-                    reward, is_end = -1, True
+                    self.conflict = False
+                    reward, is_end = -1, False       #Va cham robot khac
                     print("Va cham phai Robot khac")
                     return reward, is_end
         """reach target place"""
@@ -250,11 +269,17 @@ class Explorer:
 
     def continue_working(self):
         self.task_stage = self.task_stage + 1
+        self.working = 1
         if self.task_stage == 3:
             self.layout.change_layout(self.layout.task_list[self.task_order][0] - 1,
                                       self.layout.task_list[self.task_order][1] - 1, 1.8)
             self.task_stage = 0
             self.layout.task_arrangement[2][self.task_order] = 1
+            # print("task 1:", self.layout.task_list[self.task_order][0])
+            # print("task 2:", self.layout.task_list[self.task_order][1])
+            # print("task 1:", self.layout.task_list[self.task_order][2])
+            # print("task 2:", self.layout.task_list[self.task_order][3])
+            # end_task(self.layout.task_list[self.task_order][0], self.layout.task_list[self.task_order][1],self.layout.task_list[self.task_order][2],self.layout.task_list[self.task_order][3])
         self.icon_path = self.get_icon()
         self.get_task()
 
@@ -288,15 +313,27 @@ class Explorer:
                                            (self.current_place[0] - 1, self.current_place[1] - 1),
                                            (self.target_position[0] - 1, self.target_position[1] - 1))
         find_target, path_list, path_map, action_list = path_founder.run_astar_method()
-        # print("self.current_place", self.current_place)
-        # print("self.target_position", self.target_position)
-        # print("find_target", find_target)
-        # print("path_list", path_list)
-        # print("path_map", path_map)
-        # print("action_list", action_list)
-        if find_target == False or len(action_list) == 0:
+
+        if len(action_list) > self.checklen:
+            self.checklen = len(action_list)
+        # print("action:", action_list)
+        
+        if find_target == False or self.checklen == 0:
             action_str = "STOP"
         else:
             action_str = action_list[0]
         # print(action_list)
         return action_str
+    
+    
+    # def find_path_astar(self, explorer_group=None):
+    #     path_founder = astar.FindPathAstar(self.create_valid_matrix(explorer_group),
+    #                                        (self.current_place[0] - 1, self.current_place[1] - 1),
+    #                                        (self.target_position[0] - 1, self.target_position[1] - 1))
+    #     find_target, path_list, path_map, action_list = path_founder.run_astar_method()
+    #     if find_target == False or len(action_list) == 0:
+    #         action_str = "STOP"
+    #     else:
+    #         action_str = action_list[0]
+    #     # print(action_list)
+    #     return action_str
